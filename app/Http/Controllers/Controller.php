@@ -43,7 +43,9 @@ class Controller extends BaseController
     }
 
     private function getUsers() {
-        $users = User::orderBy('created_at', 'DESC')->paginate(20);
+        $users = User::orderBy('created_at', 'DESC')
+                ->paginate(20)
+                ->withPath('/user');
         return $users;
     }
 
