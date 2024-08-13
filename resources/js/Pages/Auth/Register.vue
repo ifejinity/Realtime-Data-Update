@@ -1,74 +1,63 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
-import { onMounted, ref } from "vue";
+import { Head } from '@inertiajs/vue3';
+import { onMounted, reactive, ref } from "vue";
 let props = defineProps({
     users: Object
 })
+const myChart = ref();
+let options = {
+    chart: {
+        height: 380,
+        width: "100%",
+        type: "area",
+        animations: {
+            initialAnimation: {
+                enabled: false
+            }
+        }
+    },
+    xaxis: {
+        type: "datetime"
+    }
+}
+let series = reactive([
+    {
+        name: "Users",
+        data: [
+            ...props.users
+        ]
+    }
+]);
 
-let users = ref(props.users);
-
-const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    const options = {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    };
-    const formattedDate = date.toLocaleString('en-US', options);
-    return formattedDate;
+const updateChart = (event) => {
+    myChart.value.updateSeries ([
+        {
+            data: [
+                ...event.user
+            ]
+        }
+    ], true)
 }
 
 onMounted(() => {
     window.Echo.channel('user')
-        .listen('.user-registered', (event) => {
-            console.log('Event received:', event);
-            users.value = event.user;
-        });
+    .listen('.user-registered', (event) => {
+        console.log('Event received:', event);
+        updateChart(event);
+    });
 });
 </script>
 
 <template>
     <Head title="Users" />
     <div
-        class="w-full flex justify-center p-[24px] min-h-screen">
-        <div class="overflow-x-auto w-full">
-            <table class="table">
-                <!-- head -->
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                <!-- row 1 -->
-                <tr 
-                    v-for="item of users.data"
-                    class="bg-base-200">
-                    <th>{{ item?.id }}</th>
-                    <td>{{ item?.name }}</td>
-                    <td>{{ item?.email }}</td>
-                    <td>{{ formatDate(item.created_at) }}</td>
-                </tr>
-                </tbody>
-            </table>
-            <div
-                v-if="users.data.length != 0"
-                class="w-full flex justify-center items-center mt-5">
-                <div class="join">
-                    <Link 
-                        :href="link?.url"
-                        v-for="link of users.links"
-                        :class="{'bg-red-300' : link.active}"
-                        class="join-item btn" v-html="link.label">
-                    </Link>
-                </div>
-            </div>
-        </div>
+        class="w-full flex justify-center items-center p-[24px] min-h-screen">
+        <apexchart 
+            ref="myChart"
+            width="500" 
+            type="area" 
+            :options="options" 
+            :series="series">
+        </apexchart>
     </div>
 </template>

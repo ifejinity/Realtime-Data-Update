@@ -43,9 +43,12 @@ class Controller extends BaseController
     }
 
     private function getUsers() {
-        $users = User::orderBy('created_at', 'DESC')
-                ->paginate(20)
-                ->withPath('/user');
+        $users = User::
+            selectRaw('DATE_FORMAT(created_at, "%m-%d-%Y GMT") as x, COUNT(*) as y')
+            ->groupBy('x')
+            ->orderBy('x')
+            ->get()
+            ->toArray();
         return $users;
     }
 
