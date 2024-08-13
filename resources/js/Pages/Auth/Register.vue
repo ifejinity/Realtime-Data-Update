@@ -58,6 +58,7 @@ onMounted(() => {
                 </tbody>
             </table>
             <div
+                v-if="users.data.length != 0"
                 class="w-full flex justify-center items-center mt-5">
                 <div class="join">
                     <Link 
